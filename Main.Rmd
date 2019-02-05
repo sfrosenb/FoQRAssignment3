@@ -1,0 +1,25 @@
+---
+title: "FoQR-HW-3"
+author: "Sam Rosenblatt"
+date: "1/30/2019"
+output: html_document
+---
+
+
+First we load in the databases
+```{r}
+load("COMADRE_v.2.0.1.RData")
+load("COMPADRE_v.4.0.1.RData")
+```
+
+Brendan and I are working on a project modelling contagion in populations of honey bee and bumble bee species where the contagion is transmitted through several flowers. 
+
+Initially we tried to use this as an oppurtunity to investigate the population models of the bees, however there are no models of bee populations in the database, or even any Hymenoptera populations at all
+
+```{r}
+grep(comadre$metadata$Order,pattern = 'Hymenoptera')
+```
+
+Thus, instead of working with the bee populations we decided to look at
+
+
