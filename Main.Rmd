@@ -2,7 +2,8 @@
 title: "FoQR-HW-3"
 author: "Sam Rosenblatt"
 date: "1/30/2019"
-output: html_document
+output:
+  pdf_document: default
 ---
 
 
@@ -22,4 +23,6 @@ grep(comadre$metadata$Order,pattern = 'Hymenoptera')
 
 Thus, instead of working with the bee populations we decided to look at
 
+## Some very important information we will have to keep when we merge our branches
 
+it is *very* important we keep this section after we merge our upstream branch
