@@ -12,6 +12,8 @@ load("COMADRE_v.2.0.1.RData")
 load("COMPADRE_v.4.0.1.RData")
 ```
 
+## Species choice
+
 Brendan and I are working on a project modelling contagion in populations of honey bee and bumble bee species where the contagion is transmitted through several flowers. 
 
 Initially we tried to use this as an oppurtunity to investigate the population models of the bees, however there are no models of bee populations in the database, or even any Hymenoptera populations at all
@@ -20,6 +22,17 @@ Initially we tried to use this as an oppurtunity to investigate the population m
 grep(comadre$metadata$Order,pattern = 'Hymenoptera')
 ```
 
-Thus, instead of working with the bee populations we decided to look at
+Thus, instead of working with the bee populations we decided to look at the **Tiger mosquito**, *Aedes albopictus*. There are several life-stage matrices for this species in the database:
+
+```{r}
+comadre$metadata$SpeciesAccepted[grep('Diptera', comadre$metadata$Order)]
+```
+
+This species is epemiologically significant since it is a vector to several human diseases, its invasive species status, and its difficulty to control. 
+
+Since our work modelling disease in bee populations began with studying the classical Ross-Macdonald model, we thought it could be interesting to get a sense of how matrix models could be used to study the life-stages of this species.
+
+## Population question
+hello
 
 
