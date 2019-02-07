@@ -21,7 +21,7 @@ Initially we tried to use this as an oppurtunity to investigate the population m
 grep(comadre$metadata$Order,pattern = 'Hymenoptera')
 ```
 
-Thus, instead of working with the bee populations we decided to look at
+Thus, instead of working with the bee populations we decided to look at one of the species of flower that is a transmission vector between bumblebees and honeybees. 
 
 ## Some very important information we will have to keep when we merge our branches
 
