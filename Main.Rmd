@@ -1,5 +1,5 @@
 ---
-title: "FoQR-HW-3"
+title: ""
 author: "Sam Rosenblatt"
 date: "1/30/2019"
 output:
@@ -9,9 +9,13 @@ output:
 
 First we load in the databases
 ```{r}
+require(tidyverse)
 load("COMADRE_v.2.0.1.RData")
 load("COMPADRE_v.4.0.1.RData")
 ```
+
+
+#Part A
 
 Brendan and I are working on a project modelling contagion in populations of honey bee and bumble bee species where the contagion is transmitted through several flowers. 
 
@@ -21,7 +25,230 @@ Initially we tried to use this as an oppurtunity to investigate the population m
 grep(comadre$metadata$Order,pattern = 'Hymenoptera')
 ```
 
-Thus, instead of working with the bee populations we decided to look at one of the species of flower that is a transmission vector between bumblebees and honeybees. 
+Thus, instead of working with the bee populations we decided to look at one of the species of flower that is a transmission vector between bumblebees and honeybees: The white clover, i.e. *Trifolium repens* 
+
+First we check that it exists in the database:
+```{r}
+grep(compadre$metadata$SpeciesAccepted,pattern = 'Lotus corniculatus')
+```
+
+From the above chunk we see that indeed it exists in the database, now we would like to choose the model which is the most relevant to our research, which is mainly concerned with these populations in Vermont and the greater New England area. To see which dataset is most appropriate for our purposes we will look at some of the info for each dataset.
+
+```{r}
+allDatasets = grep(compadre$metadata$SpeciesAccepted,pattern = 'Lotus corniculatus')
+
+for (dataset in allDatasets){
+  print(paste0("Dataset #: ", dataset))
+  print(paste0("Continent: ", compadre$metadata$Continent[dataset]))
+  print(paste0("Country: ", compadre$metadata$Country[dataset]))
+  print(paste0("Ecoregion: ", compadre$metadata$Ecoregion[dataset]))
+  print(paste0("Latitude: ", compadre$metadata$Lat[dataset]))
+  print(paste0("Longitude: ", compadre$metadata$Lon[dataset]))
+  print("______________________________________________")
+}
+
+```
+
+Whelp, that didnt narrow down our search at all. I guess we will check out the papers to see the locations of the species.
+
+```{r}
+for (dataset in allDatasets){
+  print(paste0("Dataset #: ", dataset))
+  print(paste0("DOI: ", compadre$metadata$DOI.ISBN[dataset]))
+  print("______________________________________________")
+  
+}
+
+```
+
+From this output we can see that apparently all these datasets came from one particular publication. 
+
+Upon reading the publication we find that the methods are quite complex, and only some of the matrices can be used for our purposes. To identify if any of the available ones are such matrices we gather some further info about them.
+
+
+```{r}
+allDatasets = grep(compadre$metadata$SpeciesAccepted,pattern = 'Lotus corniculatus')
+
+for (dataset in allDatasets){
+  print(paste0("Dataset #: ", dataset))
+  print(paste0("Matrix Composite: ", compadre$metadata$MatrixComposite[dataset]))
+  print(paste0("Matrix Treatment: ", compadre$metadata$MatrixTreatment[dataset]))
+  print(paste0("Matrix Start Year, End Year: ", compadre$metadata$MatrixStartYear[dataset], ", ", compadre$metadata$MatrixEndYear[dataset]))
+  print(paste0("Matrix Start Season, End Season: ", compadre$metadata$MatrixStartSeason[dataset], ", ", compadre$metadata$MatrixEndSeason[dataset] ))
+  print(paste0("Matrix Start Month, End Month: ", compadre$metadata$MatrixStartMonth[dataset], ", ", compadre$metadata$MatrixEndMonth[dataset]))
+  print(paste0("Matrix Split: ", compadre$metadata$MatrixSplit[dataset]))
+  print(paste0("Matrix Criteria Ontogeny: ", compadre$metadata$MatrixCriteriaOntogeny[dataset]))
+  print(paste0("Matrix Criteria Age: ", compadre$metadata$MatrixCriteriaAge[dataset]))
+  print(paste0("Matrix Criteria Size: ", compadre$metadata$MatrixCriteriaSize[dataset]))
+  print(paste0("Matrix Observation: ", compadre$metadata$MatrixPopulation[dataset]))
+  print(paste0("Matrix Class described by author: ", compadre$matrixClass$MatrixClassAuthor[dataset]))
+  print(paste0("Matrix Class standardized by compadre creators: ", compadre$matrixClass$MatrixClassOrganized[dataset]))
+  print(paste0("Matrix Class numerical representation: ", compadre$matrixClass$MatrixClassNumber[dataset]))
+  print("______________________________________________")
+  
+}
+
+```
+
+
+
+The only useful criteria with documentation for these matrices are: MatrixComposite, MatrixTreatment, MatrixSplit, MatrixCriteriaOntogeny, MatrixCriteriaAge, and MatrixCriteriaSize. With this limited documentation, it is impossible to distinguish the correspondance between these matrices and the ones mentioned in the article.
+
+In the journal article the only population matrix that matches the kind we covered in class would be what the authors call the "composite matrix", as all the other matrices only cover a small part of the lifecycle. And because of the poor documentation, it is impossible to tell which available dataset contains that matrix, if any. 
+
+So instead we will try to do a similar process with another flower that both bumblebees and honeybees pollinate, the common dandelion, which according to Wikipedia, is named *Taraxacum officinale*, but also according to Wikipedia is synonymous with *Taraxacum campylodes*, which we found using the code below.
+
+```{r}
+dandelions = grep(compadre$metadata$SpeciesAccepted, pattern = 'Taraxacum')
+for (dandelion in dandelions){
+  print(compadre$metadata$SpeciesAccepted[dandelion])
+}
+```
+
+Now to differentiate between the datasets for Taraxacum campylodes we loop through them printing out the location and journal article which they come from
+
+```{r}
+campylodeses = grep(compadre$metadata$SpeciesAccepted,pattern = 'Taraxacum campylodes')
+
+for (campylodes in campylodeses){
+  print(paste0("Dataset #: ", campylodes))
+  print(paste0("DOI: ", compadre$metadata$DOI.ISBN[campylodes]))
+  print(paste0("Country: ", compadre$metadata$Country[campylodes]))
+  print(paste0("Latitude: ", compadre$metadata$Lat[campylodes]))
+  print(paste0("Longitude: ", compadre$metadata$Lon[campylodes]))
+  print("______________________________________________")
+}
+
+```
+
+Reading the articles we find that the data in the 5th listed dataset is appropriate for our purposes for multiple reasons. With the ultimate goal in mind of using modelling approaches to inform management strategies to prevent the spread of disease between honey bees and bumblebees, these reasons include:
+
+* Both bumble bees and honey bees pollinate the common dandelion, so it is a potential vector
+
+* The common dandelion is one of the most recognizable flowers to the average person, thus if it were suggested by seperate, associated research, that increased or decreased density of dandelions decreased the spread of diseases between bees, then public awareness campaigns to either encourage the weeding or the spreading of dandelions would be potentially useful management strategies
+
+* The dandelion itself is an invasive species, so before any such campaigns as mentioned above were to be launched, a thorough understanding of how these populations grow would be necessary to avoid unwanted consequences
+
+
+#Part B
+
+Recent research suggests that flowers pollinated by both honey bees and bumble bees is a transmission route between the two species. Additionally, out of several tested species of flowers, research has found that different flowers have different capacities for harboring certain diseases. With the goal of managing the spread of these disease in mind, we would like to be able to consider increasing or decreasing the density of differnt species of flower as a potential management strategy. Multiple considerations are involved in this intervention approach. While dandelions have yet to be tested for their efficacy as a disease vector, since it has been demonstrated that other species of flower have differential efficacies, we can assume that the dandelion is either less or greater than average in its spreading efficacy. The questions that we would want to answer with this matrix model depends upon the answer to that question.
+
+#####If Dandelions are found to be __unlikely__ to harbor the pathogen:
+* Can we safely increase the dandelion poulation to decrease the pathogen without creating a runaway invasive species?
+
+* One potential management strategy would be to launch a public awareness campaign to encourage people to spread and not kill dandelions in order to \#SaveTheBees. An easy and potentially eye-catching and memorable advertising tactic might involve the image of a person blowing a dandelion [example pictured]. However this tactic would only effective if that stage in the lifecycle were important. So we would like to find out if that is true.
+
+
+<p style="text-align:middle;"><img src="dandelionPic.jpg"  width="600" height="400"></p>
+
+
+#####If Dandelions are found to be __likely__ to harbor the pathogen:
+* How low do we need to make the population density before it will collapse?
+
+* Is there a particular stage of development that we should target to me most effective in eradicating the plant?
+
+# Part C
+
+### Eigenvalues and stable distribution
+
+```{r}
+compadre$matrixClass[[4982]]
+m = compadre$mat[[4982]][[1]]
+m
+m_eigen = eigen(m)
+m_eigen
+```
+
+The (dominant) eigenvalue is `r m_eigen[[1]][1]`, while the stable state distribution is given by the dominant right eigenvector, i.e., the first column of the `vectors` variable above. To make the distribution more readable, we can round and normalize them:
+
+```{r}
+stab_dist = round(m_eigen$vectors[,1]/sum(m_eigen$vectors[,1]), 5)
+stab_dist
+```
+
+### Stability and elasticity
+
+To compute the stability and elasticity, we will also need the left eigenvalue:
+
+```{r}
+m_eigen_t = eigen(t(m))
+repr_val = round(m_eigen_t$vectors[,1]/sum(m_eigen_t$vectors[,1]), 8)
+repr_val
+```
+
+Since it appears the easiest way to compute the elasticity for a Leslie matrix is to compute the sensitivity first, we do this first.
+
+$$S = v \cdot w^{\text{T}},$$
+
+where $v$ is the reproductive value and $w$ is the stable age distribution.
+
+```{r}
+m_sen = repr_val %*% t(stab_dist)
+m_sen
+```
+
+This tells us that if we were to change the values in each term of $m$ by a fixed small amount one at a time, we would see the greatest change in $\lambda$ at index $(1, 3)$, that is, the transition value for going from a seed to a reproductive adult.
+
+Now, the elasticity follows directly.
+
+$$E = \frac{1}{\lambda} \cdot S \circ M,$$
+
+where $\circ$ denotes the Hadamard product and $M$ is the Leslie matrix.
+
+```{r}
+m_elas = m_sen * m / m_eigen[[1]]
+m_elas
+```
+
+This tells us that a small change in the nonreproductive to reproductive transition value will cause the most change in $\lambda$, *proportional* to its original value.
+
+The validity of our $S$ and $E$ can easily be checked by simply varying $M$ in the ways described above.
+
+
+```{r}
+# test the sensitivity
+x = matrix(nrow=3, ncol=3)
+for (i in 1:nrow(m)) {
+  for (j in 1:ncol(m)) {
+    tmp = m[i, j]
+    m[i, j] = tmp + .05
+    x[i, j] = eigen(m)[[1]][1]
+    m[i, j] = tmp
+  }
+}
+x # the eigenval at (1, 3) should be largest
+
+# test the elasticity
+for (i in 1:nrow(m)) {
+  for (j in 1:ncol(m)) {
+    tmp = m[i, j]
+    m[i, j] = tmp * 1.05
+    x[i, j] = eigen(m)[[1]][1]
+    m[i, j] = tmp
+  }
+}
+x # the eigenval at (2, 3) should be largest
+```
+
+# Part D
+
+One of the nice things about the elasticity is that 0 values in the Leslie matrix will have the smallest elasticity. In terms of informing management strategy, this is useful because generally a 0 value indicates a biologically impossible event. Therefore, to assess what sort of management will make the most impact, it makes sense to consider elasticity over sensitivity.
+
+Let's examine the elasticity matrix in more detail. The following plot seperates each life stage in to a separate line. On the x-axis is the "to" part of the transition matrix, for the given "from" part, and the y-axis gives the elasticity.
+
+```{r}
+m_elas %>%
+  data.frame(x=1:nrow(m)) %>%
+  gather(ls, elas, -x) %>%
+  ggplot(aes(x=x, y=elas, col=ls)) + geom_line(size=1.3)
+```
+
+We see that changing the transition value for going from unreproductive to reproductive adults will have the greatest effect on population growth. Therefore, if we wanted to, for example, decrease the value of $\lambda$ closer to 0 in order to subdue this population, we would best focus our efforts on limiting the number of nonreproductive adults which transition to reproductive status (through chemicals or something?), rather than running around and plucking a bunch of reproductive adults out of the ground.
+
+
+
+
 
 ## Some very important information we will have to keep when we merge our branches
 
