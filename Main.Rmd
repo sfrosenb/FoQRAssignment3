@@ -1,15 +1,15 @@
 ---
-title: "FoQR-HW-3"
+title: ""
 author: "Sam Rosenblatt"
 date: "1/30/2019"
 output:
-  html_document: default
   pdf_document: default
 ---
 
 
 First we load in the databases
 ```{r}
+require(tidyverse)
 load("COMADRE_v.2.0.1.RData")
 load("COMPADRE_v.4.0.1.RData")
 ```
@@ -164,7 +164,7 @@ Reading the articles we find that the data in the 5th listed dataset is appropri
 
 #Part B
 
-Recent research suggests that flowers pollinated by both honey bees and bumble bees can act as a disease vector between the two species. Additionally, out of several tested species of flowers, research has found that different flowers have different capacities as disease vectors. With the goal of managing the spread of these disease in mind, we would like to be able to consider increasing or decreasing the density of differnt species of flower as a potential management strategy. Multiple considerations are involved in this intervention approach. While dandelions have yet to be tested for their efficacy as a disease vector, since it has been demonstrated that other species of flower have differential efficacies, we can assume that the dandelion is either less or greater than average in its spreading efficacy. The questions that we would want to answer with this matrix model depends upon the answer to that question.
+Recent research suggests that flowers pollinated by both honey bees and bumble bees is a transmission route between the two species. Additionally, out of several tested species of flowers, research has found that different flowers have different capacities for harboring certain diseases. With the goal of managing the spread of these disease in mind, we would like to be able to consider increasing or decreasing the density of differnt species of flower as a potential management strategy. Multiple considerations are involved in this intervention approach. While dandelions have yet to be tested for their efficacy as a disease vector, since it has been demonstrated that other species of flower have differential efficacies, we can assume that the dandelion is either less or greater than average in its spreading efficacy. The questions that we would want to answer with this matrix model depends upon the answer to that question.
 
 #####If Dandelions are found to be __unlikely__ to harbor the pathogen:
 * Can we safely increase the dandelion poulation to decrease the pathogen without creating a runaway invasive species?
@@ -179,4 +179,107 @@ Recent research suggests that flowers pollinated by both honey bees and bumble b
 * How low do we need to make the population density before it will collapse?
 
 * Is there a particular stage of development that we should target to me most effective in eradicating the plant?
+
+# Part C
+
+### Eigenvalues and stable distribution
+
+```{r}
+compadre$matrixClass[[4982]]
+m = compadre$mat[[4982]][[1]]
+m
+m_eigen = eigen(m)
+m_eigen
+```
+
+The (dominant) eigenvalue is `r m_eigen[[1]][1]`, while the stable state distribution is given by the dominant right eigenvector, i.e., the first column of the `vectors` variable above. To make the distribution more readable, we can round and normalize them:
+
+```{r}
+stab_dist = round(m_eigen$vectors[,1]/sum(m_eigen$vectors[,1]), 5)
+stab_dist
+```
+
+### Stability and elasticity
+
+To compute the stability and elasticity, we will also need the left eigenvalue:
+
+```{r}
+m_eigen_t = eigen(t(m))
+repr_val = round(m_eigen_t$vectors[,1]/sum(m_eigen_t$vectors[,1]), 8)
+repr_val
+```
+
+Since it appears the easiest way to compute the elasticity for a Leslie matrix is to compute the sensitivity first, we do this first.
+
+$$S = v \cdot w^{\text{T}},$$
+
+where $v$ is the reproductive value and $w$ is the stable age distribution.
+
+```{r}
+m_sen = repr_val %*% t(stab_dist)
+m_sen
+```
+
+This tells us that if we were to change the values in each term of $m$ by a fixed small amount one at a time, we would see the greatest change in $\lambda$ at index $(1, 3)$, that is, the transition value for going from a seed to a reproductive adult.
+
+Now, the elasticity follows directly.
+
+$$E = \frac{1}{\lambda} \cdot S \circ M,$$
+
+where $\circ$ denotes the Hadamard product and $M$ is the Leslie matrix.
+
+```{r}
+m_elas = m_sen * m / m_eigen[[1]]
+m_elas
+```
+
+This tells us that a small change in the nonreproductive to reproductive transition value will cause the most change in $\lambda$, *proportional* to its original value.
+
+The validity of our $S$ and $E$ can easily be checked by simply varying $M$ in the ways described above.
+
+
+```{r}
+# test the sensitivity
+x = matrix(nrow=3, ncol=3)
+for (i in 1:nrow(m)) {
+  for (j in 1:ncol(m)) {
+    tmp = m[i, j]
+    m[i, j] = tmp + .05
+    x[i, j] = eigen(m)[[1]][1]
+    m[i, j] = tmp
+  }
+}
+x # the eigenval at (1, 3) should be largest
+
+# test the elasticity
+for (i in 1:nrow(m)) {
+  for (j in 1:ncol(m)) {
+    tmp = m[i, j]
+    m[i, j] = tmp * 1.05
+    x[i, j] = eigen(m)[[1]][1]
+    m[i, j] = tmp
+  }
+}
+x # the eigenval at (2, 3) should be largest
+```
+
+# Part D
+
+One of the nice things about the elasticity is that 0 values in the Leslie matrix will have the smallest elasticity. In terms of informing management strategy, this is useful because generally a 0 value indicates a biologically impossible event. Therefore, to assess what sort of management will make the most impact, it makes sense to consider elasticity over sensitivity.
+
+Let's examine the elasticity matrix in more detail. The following plot seperates each life stage in to a separate line. On the x-axis is the "to" part of the transition matrix, for the given "from" part, and the y-axis gives the elasticity.
+
+```{r}
+m_elas %>%
+  data.frame(x=1:nrow(m)) %>%
+  gather(ls, elas, -x) %>%
+  ggplot(aes(x=x, y=elas, col=ls)) + geom_line(size=1.3)
+```
+
+We see that changing the transition value for going from unreproductive to reproductive adults will have the greatest effect on population growth. Therefore, if we wanted to, for example, decrease the value of $\lambda$ closer to 0 in order to subdue this population, we would best focus our efforts on limiting the number of nonreproductive adults which transition to reproductive status (through chemicals or something?), rather than running around and plucking a bunch of reproductive adults out of the ground.
+
+
+
+
+
 
