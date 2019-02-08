@@ -1,7 +1,7 @@
 ---
-title: ""
-author: "Sam Rosenblatt"
-date: "1/30/2019"
+title: "Assignment 3"
+author: "Sam Rosenblatt, Brendan Case"
+date: "2/8/2019"
 output:
   pdf_document: default
 ---
@@ -245,11 +245,3 @@ m_elas %>%
 ```
 
 We see that changing the transition value for going from unreproductive to reproductive adults will have the greatest effect on population growth. Therefore, if we wanted to, for example, decrease the value of $\lambda$ closer to 0 in order to subdue this population, we would best focus our efforts on limiting the number of nonreproductive adults which transition to reproductive status (through chemicals or something?), rather than running around and plucking a bunch of reproductive adults out of the ground.
-
-
-
-
-
-## Some very important information we will have to keep when we merge our branches
-
-it is *very* important we keep this section after we merge our upstream branch
