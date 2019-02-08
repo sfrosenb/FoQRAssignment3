@@ -25,9 +25,6 @@ Initially we tried to use this as an oppurtunity to investigate the population m
 grep(comadre$metadata$Order,pattern = 'Hymenoptera')
 ```
 
-
-
-
 Thus, instead of working with the bee populations we decided to look at one of the species of flower that is a transmission vector between bumblebees and honeybees: The white clover, i.e. *Trifolium repens* 
 
 First we check that it exists in the database:
@@ -48,7 +45,6 @@ for (dataset in allDatasets){
   print(paste0("Latitude: ", compadre$metadata$Lat[dataset]))
   print(paste0("Longitude: ", compadre$metadata$Lon[dataset]))
   print("______________________________________________")
-  
 }
 
 ```
@@ -65,9 +61,9 @@ for (dataset in allDatasets){
 
 ```
 
-Ok so from this output we can see that apparently all these datasets came from from research involved in one particular publication. 
+From this output we can see that apparently all these datasets came from one particular publication. 
 
-Upon reading the publication we find that the methods are quite complex, and only some of the matrices used can be used for our purposes. To identify if any of the available ones are such matrices we gather some further info about them.
+Upon reading the publication we find that the methods are quite complex, and only some of the matrices can be used for our purposes. To identify if any of the available ones are such matrices we gather some further info about them.
 
 
 ```{r}
@@ -75,55 +71,30 @@ allDatasets = grep(compadre$metadata$SpeciesAccepted,pattern = 'Lotus corniculat
 
 for (dataset in allDatasets){
   print(paste0("Dataset #: ", dataset))
-  print(paste0("Continent: ", compadre$metadata$Continent[dataset]))
-  print(paste0("Country: ", compadre$metadata$Country[dataset]))
   print(paste0("Matrix Composite: ", compadre$metadata$MatrixComposite[dataset]))
   print(paste0("Matrix Treatment: ", compadre$metadata$MatrixTreatment[dataset]))
-  print(paste0("Matrix Start Year: ", compadre$metadata$MatrixStartYear[dataset]))
-  print(paste0("Matrix End Year: ", compadre$metadata$MatrixEndYear[dataset]))
-  print(paste0("Matrix Start Season: ", compadre$metadata$MatrixStartSeason[dataset]))
-  print(paste0("Matrix End Season: ", compadre$metadata$MatrixEndSeason[dataset]))
-  print(paste0("Matrix Start Month: ", compadre$metadata$MatrixStartMonth[dataset]))
-  print(paste0("Matrix End Month: ", compadre$metadata$MatrixEndMonth[dataset]))
+  print(paste0("Matrix Start Year, End Year: ", compadre$metadata$MatrixStartYear[dataset], ", ", compadre$metadata$MatrixEndYear[dataset]))
+  print(paste0("Matrix Start Season, End Season: ", compadre$metadata$MatrixStartSeason[dataset], ", ", compadre$metadata$MatrixEndSeason[dataset] ))
+  print(paste0("Matrix Start Month, End Month: ", compadre$metadata$MatrixStartMonth[dataset], ", ", compadre$metadata$MatrixEndMonth[dataset]))
   print(paste0("Matrix Split: ", compadre$metadata$MatrixSplit[dataset]))
   print(paste0("Matrix Criteria Ontogeny: ", compadre$metadata$MatrixCriteriaOntogeny[dataset]))
   print(paste0("Matrix Criteria Age: ", compadre$metadata$MatrixCriteriaAge[dataset]))
   print(paste0("Matrix Criteria Size: ", compadre$metadata$MatrixCriteriaSize[dataset]))
   print(paste0("Matrix Observation: ", compadre$metadata$MatrixPopulation[dataset]))
-  
   print(paste0("Matrix Class described by author: ", compadre$matrixClass$MatrixClassAuthor[dataset]))
   print(paste0("Matrix Class standardized by compadre creators: ", compadre$matrixClass$MatrixClassOrganized[dataset]))
   print(paste0("Matrix Class numerical representation: ", compadre$matrixClass$MatrixClassNumber[dataset]))
-
   print("______________________________________________")
   
 }
 
 ```
 
-Narrowing down the criteria to ones that there is documentation for
 
 
-```{r}
-allDatasets = grep(compadre$metadata$SpeciesAccepted,pattern = 'Lotus corniculatus')
+The only useful criteria with documentation for these matrices are: MatrixComposite, MatrixTreatment, MatrixSplit, MatrixCriteriaOntogeny, MatrixCriteriaAge, and MatrixCriteriaSize. With this limited documentation, it is impossible to distinguish the correspondance between these matrices and the ones mentioned in the article.
 
-for (dataset in allDatasets){
-  print(paste0("Dataset #: ", dataset))
-  print(paste0("Continent: ", compadre$metadata$Continent[dataset]))
-  print(paste0("Country: ", compadre$metadata$Country[dataset]))
-  print(paste0("Matrix Composite: ", compadre$metadata$MatrixComposite[dataset]))
-  print(paste0("Matrix Treatment: ", compadre$metadata$MatrixTreatment[dataset]))
-  print(paste0("Matrix Split: ", compadre$metadata$MatrixSplit[dataset]))
-  print(paste0("Matrix Criteria Ontogeny: ", compadre$metadata$MatrixCriteriaOntogeny[dataset]))
-  print(paste0("Matrix Criteria Age: ", compadre$metadata$MatrixCriteriaAge[dataset]))
-  print(paste0("Matrix Criteria Size: ", compadre$metadata$MatrixCriteriaSize[dataset]))
-  print("______________________________________________")
-  
-}
-
-```
-
-Whelp, we tried everything we could to figure out whether we could use one of the matrices for white clover but the documentation for these is incredibly poor. In the journal article the only population matrix that matches the kind we covered in class would be what the authors call the "composite matrix", as all the other matrices only cover a small part of the lifecycle. And because of the poor documentation, it is impossible to tell which available dataset contains that matrix, if any. 
+In the journal article the only population matrix that matches the kind we covered in class would be what the authors call the "composite matrix", as all the other matrices only cover a small part of the lifecycle. And because of the poor documentation, it is impossible to tell which available dataset contains that matrix, if any. 
 
 So instead we will try to do a similar process with another flower that both bumblebees and honeybees pollinate, the common dandelion, which according to Wikipedia, is named *Taraxacum officinale*, but also according to Wikipedia is synonymous with *Taraxacum campylodes*, which we found using the code below.
 
@@ -146,12 +117,9 @@ for (campylodes in campylodeses){
   print(paste0("Latitude: ", compadre$metadata$Lat[campylodes]))
   print(paste0("Longitude: ", compadre$metadata$Lon[campylodes]))
   print("______________________________________________")
-  
 }
 
 ```
-
-Well it turns out that 3/4 come from the same article where the data is collected in West Virginia(based on latitude and longitude) and the last comes from Illinois. 
 
 Reading the articles we find that the data in the 5th listed dataset is appropriate for our purposes for multiple reasons. With the ultimate goal in mind of using modelling approaches to inform management strategies to prevent the spread of disease between honey bees and bumblebees, these reasons include:
 
@@ -172,7 +140,7 @@ Recent research suggests that flowers pollinated by both honey bees and bumble b
 * One potential management strategy would be to launch a public awareness campaign to encourage people to spread and not kill dandelions in order to \#SaveTheBees. An easy and potentially eye-catching and memorable advertising tactic might involve the image of a person blowing a dandelion [example pictured]. However this tactic would only effective if that stage in the lifecycle were important. So we would like to find out if that is true.
 
 
-<p style="text-align:left;"><img src="dandelionPic.jpg"  width="680" height="500"></p>
+<p style="text-align:middle;"><img src="dandelionPic.jpg"  width="600" height="400"></p>
 
 
 #####If Dandelions are found to be __likely__ to harbor the pathogen:
